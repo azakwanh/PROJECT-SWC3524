@@ -1,0 +1,82 @@
+import java.util.*;
+
+public class BacktrackingMCOP
+{
+    private int[][] costMatrix;
+    private String[] locations;
+    private int numCities;
+    private int bestCost;
+    private String bestPath;
+    private boolean[] visited;
+    
+    public BacktrackingMCOP(int[][] costMatrix, String[] locations)
+    {
+        this.costMatrix = costMatrix;
+        this.locations = locations;
+        this.numCities = costMatrix.length;
+        this.bestCost = Integer.MAX_VALUE;
+        this.bestPath = "";
+        this.visited = new boolean[numCities];
+    }
+    
+    public String solveBacktracking()
+    {
+        visited[0] = true; 
+        StringBuilder currentPath = new StringBuilder();
+        currentPath.append(locations[0]);
+        
+        backtrackHelper(0, 0, 1, currentPath);
+        
+        return "Backtracking Route: " + bestPath + " | Total Cost: " + bestCost;
+    }
+    
+    private void backtrackHelper(int currentPos, int currentCost, int count, StringBuilder currentPath)
+    {
+        if (count == numCities)
+        {
+            int totalCost = currentCost + costMatrix[currentPos][0];
+            String completePath = currentPath.toString() + " -> " + locations[0];
+            
+            if (totalCost < bestCost)
+            {
+                bestCost = totalCost;
+                bestPath = completePath;
+            }
+            return;
+        }
+        
+        for (int nextCity = 0; nextCity < numCities; nextCity++)
+        {
+            if (!visited[nextCity])
+            {
+                visited[nextCity] = true;
+                int pathLengthBefore = currentPath.length();
+                currentPath.append(" -> ").append(locations[nextCity]);
+                
+                int newCost = currentCost + costMatrix[currentPos][nextCity];
+                
+                if (newCost < bestCost)
+                {
+                    backtrackHelper(nextCity, newCost, count + 1, currentPath);
+                }
+                
+                visited[nextCity] = false;
+                currentPath.setLength(pathLengthBefore);
+            }
+        }
+    }
+    
+    public static void main(String[] args)
+    {
+        int[][] costMatrix = {
+            {0, 15, 25, 35},
+            {15, 0, 30, 28},
+            {25, 30, 0, 20},
+            {35, 28, 20, 0}
+        };
+        String[] locations = {"UPTM", "City B", "City C", "City D"};
+        
+        BacktrackingMCOP bt = new BacktrackingMCOP(costMatrix, locations);
+        System.out.println(bt.solveBacktracking());
+    }
+}
