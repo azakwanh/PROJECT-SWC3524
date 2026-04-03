@@ -1,0 +1,81 @@
+import java.util.*;
+
+public class GreedyMCOP
+{
+    private int[][] costMatrix;
+    private String[] locations;
+    private int numCities;
+    
+    public GreedyMCOP(int[][] costMatrix, String[] locations)
+    {
+        this.costMatrix = costMatrix;
+        this.locations = locations;
+        this.numCities = costMatrix.length;
+    }
+    
+    public String solveGreedyMCOP()
+    {
+        boolean[] visited = new boolean[numCities];
+        List<Integer> route = new ArrayList<>();
+        int currentCity = 0; 
+        int totalCost = 0;
+        
+        visited[currentCity] = true;
+        route.add(currentCity);
+        
+        for (int i = 1; i < numCities; i++)
+        {
+            int nextCity = findNearestUnvisitedCity(currentCity, visited);
+            totalCost += costMatrix[currentCity][nextCity];
+            visited[nextCity] = true;
+            route.add(nextCity);
+            currentCity = nextCity;
+        }
+        
+        totalCost += costMatrix[currentCity][0];
+        route.add(0); 
+        
+        String result = "Greedy Route: ";
+        for (int i = 0; i < route.size(); i++)
+        {
+            result += locations[route.get(i)];
+            if (i < route.size() - 1)
+            {
+                result += " -> ";
+            }
+        }
+        result += " | Total Cost: " + totalCost;
+        
+        return result;
+    }
+    
+    private int findNearestUnvisitedCity(int currentCity, boolean[] visited)
+    {
+        int minCost = Integer.MAX_VALUE;
+        int nearestCity = -1;
+        
+        for (int i = 0; i < numCities; i++)
+        {
+            if (!visited[i] && costMatrix[currentCity][i] < minCost && costMatrix[currentCity][i] != 0)
+            {
+                minCost = costMatrix[currentCity][i];
+                nearestCity = i;
+            }
+        }
+        return nearestCity;
+    }
+    
+    public static void main(String[] args)
+    {
+        int[][] costMatrix = {
+            {0, 15, 25, 35},
+            {15, 0, 30, 28},
+            {25, 30, 0, 20},
+            {35, 28, 20, 0}
+        };
+        String[] locations = {"UPTM", "City B", "City C", "City D"};
+        
+        GreedyMCOP greedy = new GreedyMCOP(costMatrix, locations);
+        System.out.println(greedy.solveGreedyMCOP());
+    }
+}
