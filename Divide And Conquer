@@ -1,0 +1,87 @@
+import java.util.*;
+
+public class DivideAndConquerMCOP
+{
+    private int[][] costMatrix;
+    private String[] locations;
+    private int numCities;
+    private int bestCost;
+    private String bestPath;
+    
+    public DivideAndConquerMCOP(int[][] costMatrix, String[] locations)
+    {
+        this.costMatrix = costMatrix;
+        this.locations = locations;
+        this.numCities = costMatrix.length;
+        this.bestCost = Integer.MAX_VALUE;
+        this.bestPath = "";
+    }
+    
+    public String solveDivideAndConquer()
+    {
+        boolean[] visited = new boolean[numCities];
+        visited[0] = true; 
+        StringBuilder currentPath = new StringBuilder();
+        currentPath.append(locations[0]);
+        
+        divideAndConquerHelper(0, visited, 0, 1, currentPath);
+        
+        return "Divide & Conquer Route: " + bestPath + " | Total Cost: " + bestCost;
+    }
+    
+    private void divideAndConquerHelper(int currentPos, boolean[] visited, 
+                                        int currentCost, int count, StringBuilder currentPath)
+    {
+        if (count == numCities)
+        {
+            int totalCost = currentCost + costMatrix[currentPos][0];
+            currentPath.append(" -> ").append(locations[0]);
+            
+            if (totalCost < bestCost)
+            {
+                bestCost = totalCost;
+                bestPath = currentPath.toString();
+            }
+            currentPath.setLength(currentPath.length() - (locations[0].length() + 4));
+            return;
+        }
+        
+        for (int i = 0; i < numCities; i++)
+        {
+            if (!visited[i] && i != currentPos)
+            {
+                visited[i] = true;
+                int pathLengthBefore = currentPath.length();
+                currentPath.append(" -> ").append(locations[i]);
+                
+                divideAndConquerHelper(i, visited, currentCost + costMatrix[currentPos][i], count + 1, currentPath);
+                
+                visited[i] = false;
+                currentPath.setLength(pathLengthBefore);
+            }
+        }
+    }
+    
+    private boolean allVisited(boolean[] visited)
+    {
+        for (boolean v : visited)
+        {
+            if (!v) return false;
+        }
+        return true;
+    }
+    
+    public static void main(String[] args)
+    {
+        int[][] costMatrix = {
+            {0, 15, 25, 35},
+            {15, 0, 30, 28},
+            {25, 30, 0, 20},
+            {35, 28, 20, 0}
+        };
+        String[] locations = {"UPTM", "City B", "City C", "City D"};
+        
+        DivideAndConquerMCOP dac = new DivideAndConquerMCOP(costMatrix, locations);
+        System.out.println(dac.solveDivideAndConquer());
+    }
+}
