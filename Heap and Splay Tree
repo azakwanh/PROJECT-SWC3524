@@ -1,0 +1,179 @@
+import java.util.*;
+
+// ================= MAIN CLASS =================
+public class UPTMMarketingOptimization {
+
+    // ================= MIN HEAP =================
+    static class MinHeap {
+        private ArrayList<Integer> heap = new ArrayList<>();
+
+        public void insert(int value) {
+            heap.add(value);
+            int i = heap.size() - 1;
+
+            // Heapify up
+            while (i > 0 && heap.get(parent(i)) > heap.get(i)) {
+                swap(i, parent(i));
+                i = parent(i);
+            }
+        }
+
+        public int extractMin() {
+            if (heap.size() == 0) return -1;
+
+            int root = heap.get(0);
+            int last = heap.remove(heap.size() - 1);
+
+            if (heap.size() > 0) {
+                heap.set(0, last);
+                heapify(0);
+            }
+
+            return root;
+        }
+
+        private void heapify(int i) {
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+            int smallest = i;
+
+            if (left < heap.size() && heap.get(left) < heap.get(smallest))
+                smallest = left;
+
+            if (right < heap.size() && heap.get(right) < heap.get(smallest))
+                smallest = right;
+
+            if (smallest != i) {
+                swap(i, smallest);
+                heapify(smallest);
+            }
+        }
+
+        private int parent(int i) {
+            return (i - 1) / 2;
+        }
+
+        private void swap(int i, int j) {
+            int temp = heap.get(i);
+            heap.set(i, heap.get(j));
+            heap.set(j, temp);
+        }
+    }
+
+    // ================= SPLAY TREE =================
+    static class SplayTree {
+
+        class Node {
+            int key;
+            Node left, right;
+
+            Node(int key) {
+                this.key = key;
+            }
+        }
+
+        Node root;
+
+        // Right rotate
+        private Node rightRotate(Node x) {
+            Node y = x.left;
+            x.left = y.right;
+            y.right = x;
+            return y;
+        }
+
+        // Left rotate
+        private Node leftRotate(Node x) {
+            Node y = x.right;
+            x.right = y.left;
+            y.left = x;
+            return y;
+        }
+
+        // Splay operation
+        private Node splay(Node root, int key) {
+            if (root == null || root.key == key)
+                return root;
+
+            // Key in left subtree
+            if (key < root.key) {
+                if (root.left == null) return root;
+
+                // Zig-Zig
+                if (key < root.left.key) {
+                    root.left.left = splay(root.left.left, key);
+                    root = rightRotate(root);
+                }
+                // Zig-Zag
+                else if (key > root.left.key) {
+                    root.left.right = splay(root.left.right, key);
+                    if (root.left.right != null)
+                        root.left = leftRotate(root.left);
+                }
+
+                return (root.left == null) ? root : rightRotate(root);
+            }
+
+            // Key in right subtree
+            else {
+                if (root.right == null) return root;
+
+                // Zig-Zig
+                if (key > root.right.key) {
+                    root.right.right = splay(root.right.right, key);
+                    root = leftRotate(root);
+                }
+                // Zig-Zag
+                else if (key < root.right.key) {
+                    root.right.left = splay(root.right.left, key);
+                    if (root.right.left != null)
+                        root.right = rightRotate(root.right);
+                }
+
+                return (root.right == null) ? root : leftRotate(root);
+            }
+        }
+
+        // Insert
+        public void insert(int key) {
+            root = insertRec(root, key);
+        }
+
+        private Node insertRec(Node root, int key) {
+            if (root == null) return new Node(key);
+
+            if (key < root.key)
+                root.left = insertRec(root.left, key);
+            else
+                root.right = insertRec(root.right, key);
+
+            return root;
+        }
+
+        // Search
+        public boolean search(int key) {
+            root = splay(root, key);
+            return root != null && root.key == key;
+        }
+    }
+
+    // ================= MAIN METHOD =================
+    public static void main(String[] args) {
+
+        // ===== HEAP TEST =====
+        MinHeap heap = new MinHeap();
+        heap.insert(10);
+        heap.insert(3);
+        heap.insert(15);
+
+        System.out.println("Min-Heap Extract Min: " + heap.extractMin());
+
+        // ===== SPLAY TREE TEST =====
+        SplayTree tree = new SplayTree();
+        tree.insert(20);
+        tree.insert(10);
+        tree.insert(30);
+
+        System.out.println("Splay Tree Search (10 found): " + tree.search(10));
+    }
+}
