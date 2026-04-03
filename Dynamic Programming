@@ -1,0 +1,124 @@
+import java.util.*;
+
+public class DynamicProgrammingMCOP
+{
+    private int[][] costMatrix;
+    private String[] locations;
+    private int numCities;
+    private int VISITED_ALL;
+    private int[][] memo;
+    private String[][] pathMemo;
+    
+    public DynamicProgrammingMCOP(int[][] costMatrix, String[] locations)
+    {
+        this.costMatrix = costMatrix;
+        this.locations = locations;
+        this.numCities = costMatrix.length;
+        this.VISITED_ALL = (1 << numCities) - 1; 
+        this.memo = new int[numCities][1 << numCities];
+        this.pathMemo = new String[numCities][1 << numCities];
+        
+        for (int i = 0; i < numCities; i++)
+        {
+            Arrays.fill(memo[i], -1);
+        }
+    }
+    
+    public String solveDynamicProgramming()
+    {
+        int minCost = dpHelper(0, 1); 
+        String route = getPath(0, 1);
+        
+        return "Dynamic Programming Route: " + route + " | Total Cost: " + minCost;
+    }
+    
+    private int dpHelper(int pos, int mask)
+    {
+        if (mask == VISITED_ALL)
+        {
+            return costMatrix[pos][0]; 
+        }
+        
+        if (memo[pos][mask] != -1)
+        {
+            return memo[pos][mask];
+        }
+        
+        int minCost = Integer.MAX_VALUE;
+        
+        for (int nextCity = 0; nextCity < numCities; nextCity++)
+        {
+            if ((mask & (1 << nextCity)) == 0)
+            {
+                int newMask = mask | (1 << nextCity);
+                int cost = costMatrix[pos][nextCity] + dpHelper(nextCity, newMask);
+                
+                if (cost < minCost)
+                {
+                    minCost = cost;
+                    if (pathMemo[pos][mask] == null)
+                    {
+                        pathMemo[pos][mask] = locations[nextCity];
+                    }
+                    else
+                    {
+                        pathMemo[pos][mask] = locations[nextCity] + " -> " + pathMemo[pos][mask];
+                    }
+                }
+            }
+        }
+        
+        memo[pos][mask] = minCost;
+        return minCost;
+    }
+    
+    private String getPath(int pos, int mask)
+    {
+        StringBuilder path = new StringBuilder();
+        path.append(locations[pos]);
+        
+        while (mask != VISITED_ALL)
+        {
+            int nextCity = -1;
+            int minCost = Integer.MAX_VALUE;
+            
+            for (int i = 0; i < numCities; i++)
+            {
+                if ((mask & (1 << i)) == 0)
+                {
+                    int newMask = mask | (1 << i);
+                    int cost = costMatrix[pos][i] + (memo[i][newMask] != -1 ? memo[i][newMask] : 0);
+                    if (cost < minCost)
+                    {
+                        minCost = cost;
+                        nextCity = i;
+                    }
+                }
+            }
+            
+            if (nextCity != -1)
+            {
+                path.append(" -> ").append(locations[nextCity]);
+                mask = mask | (1 << nextCity);
+                pos = nextCity;
+            }
+        }
+        
+        path.append(" -> ").append(locations[0]);
+        return path.toString();
+    }
+    
+    public static void main(String[] args)
+    {
+        int[][] costMatrix = {
+            {0, 15, 25, 35},
+            {15, 0, 30, 28},
+            {25, 30, 0, 20},
+            {35, 28, 20, 0}
+        };
+        String[] locations = {"UPTM", "City B", "City C", "City D"};
+        
+        DynamicProgrammingMCOP dp = new DynamicProgrammingMCOP(costMatrix, locations);
+        System.out.println(dp.solveDynamicProgramming());
+    }
+}
